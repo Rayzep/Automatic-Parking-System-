@@ -10,4 +10,5 @@ Key Materials:
     6. LCD and an I2C Module: Provide a visual interface for displaying information and status updates.
     7. LED (Light-Emitting Diode): used to indicate the availability of vacant parking slots.
 
-    
+DOCUMENTATION LIMK:
+    https://docs.google.com/document/d/1LqhaloCjdtd1IwTs3JRXmD-76tUs-IbQe4da1t09w1E/edit?usp=sharing
