@@ -1,0 +1,92 @@
+#include <Servo.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2); // Set the LCD address and dimensions
+int trigPin = 5;
+int echoPin = 3;
+int ledPin = 8;
+int ledPin2 = 7;
+int proximityPin = A0; // Analog pin for proximity sensor
+int proximityPin2 = A1;
+Servo myservo;
+
+int totalSpots = 2; // Total number of parking spots
+
+void setup() {
+  lcd.init(); // Initialize the LCD
+  lcd.backlight(); // Turn on backlight
+  lcd.setCursor(0,0); // Set cursor to position (0, 0)
+  lcd.print("AutoPark"); // Print "AutoPark" at (0, 0)
+  
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(ledPin, OUTPUT);
+  pinMode(ledPin2, OUTPUT);
+  pinMode(proximityPin, INPUT);
+  pinMode(proximityPin2, INPUT);
+  Serial.begin(9600);
+  myservo.attach(11);
+}
+
+void loop() {
+  lcd.setCursor(0, 1); // Set cursor to bottom row
+  
+  int proximityValue = analogRead(proximityPin);
+  int proximityValue2 = analogRead(proximityPin2);
+  
+  Serial.print("Proximity Distance: ");
+  Serial.print(proximityValue);
+  Serial.println(" ");
+  Serial.print("Proximity Distance 2: ");
+  Serial.print(proximityValue2);
+  Serial.println(" ");
+  
+  // Control LED based on proximity sensor 1
+  if (proximityValue < 500) {
+    digitalWrite(ledPin, HIGH); // Turn on LED
+  } else {
+    digitalWrite(ledPin, LOW); // Turn off LED
+  }
+  
+  // Control LED based on proximity sensor 2
+  if (proximityValue2 < 500) {
+    digitalWrite(ledPin2, HIGH); // Turn on LED
+  } else {
+    digitalWrite(ledPin2, LOW); // Turn off LED
+  }
+  
+  long duration, distance;
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration / 2) / 29.1;
+
+  Serial.print("Ultrasonic Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  // Check status for proximity sensor 1
+  int occupiedSpots1 = (proximityValue < 500) ? 1 : 0;
+  // Check status for proximity sensor 2
+  int occupiedSpots2 = (proximityValue2 < 500) ? 1 : 0;
+  
+  int totalOccupiedSpots = occupiedSpots1 + occupiedSpots2; // Moved declaration here
+  
+  // Check if distance is within range for servo movement
+  if (distance <= 10 && totalOccupiedSpots < totalSpots) { // Check if spot is available before opening
+    myservo.write(120);
+    delay(2000);
+  } else {
+    myservo.write(50);
+  }
+  
+  // Print occupied spots count
+  lcd.print(totalOccupiedSpots);
+  lcd.print("/");
+  lcd.print(totalSpots);
+  lcd.print("     ");
+
+}
